@@ -1,0 +1,638 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  SafeAreaView, 
+  ScrollView, 
+  TouchableOpacity, 
+  TextInput,
+  Dimensions 
+} from 'react-native';
+import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
+import { Ionicons } from '@expo/vector-icons';
+import NutritionPage from './NutritionPage';
+import WorkoutsPage from './WorkoutsPage';
+import ProgressPage from './ProgressPage';
+import ProfilePage from './ProfilePage';
+
+const { width } = Dimensions.get('window');
+
+// Icon Components
+const DashboardIcon = ({ active, size = 24 }) => (
+  <Ionicons name="home" size={size} color={active ? '#8b5cf6' : '#9ca3af'} />
+);
+
+const WorkoutIcon = ({ active, size = 24 }) => (
+  <Ionicons name="fitness" size={size} color={active ? '#8b5cf6' : '#9ca3af'} />
+);
+
+const NutritionIcon = ({ active, size = 24 }) => (
+  <Ionicons name="nutrition" size={size} color={active ? '#8b5cf6' : '#9ca3af'} />
+);
+
+const ProgressIcon = ({ active, size = 24 }) => (
+  <Ionicons name="trending-up" size={size} color={active ? '#8b5cf6' : '#9ca3af'} />
+);
+
+const ProfileIcon = ({ active, size = 24 }) => (
+  <Ionicons name="person" size={size} color={active ? '#8b5cf6' : '#9ca3af'} />
+);
+
+export default function App() {
+  // App state
+  const [currentPage, setCurrentPage] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [weightUnit, setWeightUnit] = useState('kg');
+  const [heightUnit, setHeightUnit] = useState('cm');
+  const [gender, setGender] = useState('male');
+  
+  // BMI state
+  const [bmiState, setBmiState] = useState({
+    height: '',
+    weight: '',
+    bmi: null,
+    bmiData: null
+  });
+
+  // Calculate BMI
+  const calculateBMI = (height, weight) => {
+    if (height && weight) {
+      const heightInMeters = parseFloat(height) / 100;
+      const weightInKg = parseFloat(weight);
+      return (weightInKg / (heightInMeters * heightInMeters)).toFixed(1);
+    }
+    return null;
+  };
+
+  // Get BMI category
+  const getBMICategory = (bmi) => {
+    if (!bmi) return null;
+    if (bmi < 18.5) return { category: 'Underweight', color: '#3b82f6' };
+    if (bmi < 25) return { category: 'Normal', color: '#10b981' };
+    if (bmi < 30) return { category: 'Overweight', color: '#f59e0b' };
+    return { category: 'Obese', color: '#ef4444' };
+  };
+
+  // Update BMI when height or weight changes
+  useEffect(() => {
+    const { height, weight } = bmiState;
+    const newBmi = calculateBMI(height, weight);
+    const newBmiData = newBmi ? getBMICategory(newBmi) : null;
+    
+    setBmiState(prev => ({
+      ...prev,
+      bmi: newBmi,
+      bmiData: newBmiData
+    }));
+  }, [bmiState.height, bmiState.weight]);
+  
+  const handleHeightChange = (value) => {
+    setBmiState(prev => ({
+      ...prev,
+      height: value
+    }));
+  };
+  
+  const handleWeightChange = (value) => {
+    setBmiState(prev => ({
+      ...prev,
+      weight: value
+    }));
+  };
+
+  // Get health tip based on BMI
+  const getHealthTip = (bmi) => {
+    if (!bmi) return "Enter your height and weight to get a health tip";
+    if (bmi < 18.5) return "Focus on building healthy muscle mass with strength training";
+    if (bmi < 25) return "Great job! Keep maintaining your healthy lifestyle";
+    if (bmi < 30) return "Consider adding more cardio to your routine";
+    return "Start with low-impact exercises and consult a professional";
+  };
+
+  // Render Dashboard
+  const renderDashboard = () => {
+    // BMI Card Component
+    const BMICard = () => (
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>Your BMI (IMC)</Text>
+          <TouchableOpacity onPress={() => {
+            setActiveTab('profile');
+            setCurrentPage('profile');
+          }}>
+            <Ionicons name="information-circle-outline" size={20} color="#8b5cf6" />
+          </TouchableOpacity>
+        </View>
+        
+        <View style={styles.bmiInputContainer}>
+          <View style={styles.bmiInputWrapper}>
+            <Text style={styles.inputLabel}>Height (cm)</Text>
+            <TextInput
+              style={styles.input}
+              value={bmiState.height}
+              onChangeText={handleHeightChange}
+              keyboardType="numeric"
+              placeholder="175"
+              placeholderTextColor="#64748b"
+            />
+          </View>
+          
+          <View style={styles.bmiInputWrapper}>
+            <Text style={styles.inputLabel}>Weight (kg)</Text>
+            <TextInput
+              style={styles.input}
+              value={bmiState.weight}
+              onChangeText={handleWeightChange}
+              keyboardType="numeric"
+              placeholder="70"
+              placeholderTextColor="#64748b"
+            />
+          </View>
+        </View>
+        
+        {bmiState.bmi && bmiState.bmiData && (
+          <View style={styles.bmiResultContainer}>
+            <Text style={styles.bmiValue}>{bmiState.bmi}</Text>
+            <View style={[styles.bmiCategory, { backgroundColor: `${bmiState.bmiData.color}20` }]}>
+              <Text style={[styles.bmiCategoryText, { color: bmiState.bmiData.color }]}>
+                {bmiState.bmiData.category}
+              </Text>
+            </View>
+          </View>
+        )}
+      </View>
+    );
+
+    // Daily Stats Card
+    const DailyStatsCard = () => (
+      <TouchableOpacity 
+        style={styles.card}
+        onPress={() => {
+          setActiveTab('progress');
+          setCurrentPage('progress');
+        }}
+      >
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>Today's Stats</Text>
+          <Text style={styles.cardSubtitle}>Tap to view details</Text>
+        </View>
+        
+        <View style={styles.statsGrid}>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>1,240</Text>
+            <Text style={styles.statLabel}>Calories</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>42 min</Text>
+            <Text style={styles.statLabel}>Workout</Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>8,567</Text>
+            <Text style={styles.statLabel}>Steps</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+
+    // Progress Graph Card
+    const ProgressGraphCard = () => (
+      <TouchableOpacity 
+        style={styles.card}
+        onPress={() => {
+          setActiveTab('progress');
+          setCurrentPage('progress');
+        }}
+      >
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>Weekly Progress</Text>
+          <Text style={styles.cardSubtitle}>Last 7 days</Text>
+        </View>
+        
+        <View style={styles.graphContainer}>
+          <View style={styles.barChart}>
+            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
+              <View key={day} style={styles.barContainer}>
+                <View 
+                  style={[
+                    styles.bar, 
+                    { 
+                      height: `${[60, 40, 80, 50, 90, 30, 70][index]}%`,
+                      backgroundColor: index === new Date().getDay() - 1 ? '#8b5cf6' : '#334155'
+                    }
+                  ]} 
+                />
+                <Text style={styles.barLabel}>{day}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+
+    // Upcoming Workout Card
+    const UpcomingWorkoutCard = () => (
+      <TouchableOpacity 
+        style={styles.card}
+        onPress={() => {
+          setActiveTab('workout');
+          setCurrentPage('workout');
+        }}
+      >
+        <View style={styles.cardHeader}>
+          <View>
+            <Text style={styles.cardTitle}>Upcoming Workout</Text>
+            <Text style={styles.cardSubtitle}>Today at 6:30 PM</Text>
+          </View>
+          <View style={[styles.workoutBadge, { backgroundColor: 'rgba(16, 185, 129, 0.2)' }]}>
+            <Text style={[styles.workoutBadgeText, { color: '#10b981' }]}>Intermediate</Text>
+          </View>
+        </View>
+        
+        <View style={styles.workoutInfo}>
+          <Ionicons name="barbell" size={20} color="#8b5cf6" />
+          <Text style={styles.workoutName}>Full Body Strength</Text>
+        </View>
+        
+        <View style={styles.workoutStats}>
+          <View style={styles.workoutStat}>
+            <Ionicons name="time" size={16} color="#94a3b8" />
+            <Text style={styles.workoutStatText}>45 min</Text>
+          </View>
+          <View style={styles.workoutStat}>
+            <Ionicons name="barbell" size={16} color="#94a3b8" />
+            <Text style={styles.workoutStatText}>8 exercises</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+
+    // Motivation Card
+    const MotivationCard = () => (
+      <TouchableOpacity 
+        style={[styles.card, styles.motivationCard]}
+        onPress={() => {
+          setActiveTab('progress');
+          setCurrentPage('progress');
+        }}
+      >
+        <Ionicons name="sparkles" size={24} color="#f59e0b" style={styles.quoteIcon} />
+        <Text style={styles.quoteText}>
+          "The only bad workout is the one that didn't happen."
+        </Text>
+      </TouchableOpacity>
+    );
+
+    // Bottom Navigation
+    const BottomNavigation = () => (
+      <View style={styles.bottomNav}>
+        <TouchableOpacity 
+          style={[styles.navItem, activeTab === 'dashboard' && styles.navItemActive]}
+          onPress={() => {
+            setActiveTab('dashboard');
+            setCurrentPage('dashboard');
+          }}
+        >
+          <DashboardIcon active={activeTab === 'dashboard'} />
+          <Text style={[styles.navLabel, activeTab === 'dashboard' && styles.navLabelActive]}>
+            Dashboard
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.navItem, activeTab === 'workout' && styles.navItemActive]}
+          onPress={() => {
+            setActiveTab('workout');
+            setCurrentPage('workout');
+          }}
+        >
+          <WorkoutIcon active={activeTab === 'workout'} />
+          <Text style={[styles.navLabel, activeTab === 'workout' && styles.navLabelActive]}>
+            Workouts
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.navItem, activeTab === 'nutrition' && styles.navItemActive]}
+          onPress={() => {
+            setActiveTab('nutrition');
+            setCurrentPage('nutrition');
+          }}
+        >
+          <NutritionIcon active={activeTab === 'nutrition'} />
+          <Text style={[styles.navLabel, activeTab === 'nutrition' && styles.navLabelActive]}>
+            Nutrition
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.navItem, activeTab === 'progress' && styles.navItemActive]}
+          onPress={() => {
+            setActiveTab('progress');
+            setCurrentPage('progress');
+          }}
+        >
+          <ProgressIcon active={activeTab === 'progress'} />
+          <Text style={[styles.navLabel, activeTab === 'progress' && styles.navLabelActive]}>
+            Progress
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.navItem, activeTab === 'profile' && styles.navItemActive]}
+          onPress={() => {
+            setActiveTab('profile');
+            setCurrentPage('profile');
+          }}
+        >
+          <ProfileIcon active={activeTab === 'profile'} />
+          <Text style={[styles.navLabel, activeTab === 'profile' && styles.navLabelActive]}>
+            Profile
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+
+    return (
+      <SafeAreaView style={styles.dashboardContainer}>
+        <ExpoStatusBar style="light" />
+        
+        {/* Header */}
+        <View style={styles.dashboardHeader}>
+          <View>
+            <Text style={styles.dashboardTitle}>Your Fitness Dashboard</Text>
+            <Text style={styles.dashboardSubtitle}>Welcome back! Let's crush your goals today</Text>
+          </View>
+        </View>
+
+        {/* Main Content */}
+        <ScrollView 
+          style={styles.dashboardContent} 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          <BMICard />
+          <DailyStatsCard />
+          <ProgressGraphCard />
+          <UpcomingWorkoutCard />
+          <MotivationCard />
+        </ScrollView>
+
+        {/* Bottom Navigation */}
+        <BottomNavigation />
+      </SafeAreaView>
+    );
+  };
+
+  // Render the current page based on state
+  const renderCurrentPage = () => {
+    switch (currentPage) {
+      case 'dashboard':
+        return renderDashboard();
+      case 'workout':
+        return <WorkoutsPage setCurrentPage={setCurrentPage} />;
+      case 'nutrition':
+        return <NutritionPage setCurrentPage={setCurrentPage} />;
+      case 'profile':
+        return <ProfilePage setCurrentPage={setCurrentPage} />;
+      case 'progress':
+        return <ProgressPage setCurrentPage={setCurrentPage} />;
+      default:
+        return renderDashboard();
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      {renderCurrentPage()}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+  },
+  // Dashboard Styles
+  dashboardContainer: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+  },
+  dashboardHeader: {
+    padding: 16,
+    paddingBottom: 8,
+  },
+  dashboardTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#ffffff',
+    marginBottom: 4,
+  },
+  dashboardSubtitle: {
+    fontSize: 14,
+    color: '#94a3b8',
+  },
+  dashboardContent: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 100,
+  },
+  // Card Styles
+  card: {
+    backgroundColor: '#1e293b',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#2d3748',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  cardSubtitle: {
+    fontSize: 12,
+    color: '#94a3b8',
+    marginTop: 2,
+  },
+  // BMI Card Styles
+  bmiInputContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  bmiInputWrapper: {
+    flex: 1,
+    marginHorizontal: 4,
+  },
+  inputLabel: {
+    fontSize: 12,
+    color: '#94a3b8',
+    marginBottom: 4,
+  },
+  input: {
+    backgroundColor: '#0f172a',
+    borderRadius: 8,
+    padding: 10,
+    color: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#2d3748',
+  },
+  bmiResultContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  bmiValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  bmiCategory: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  bmiCategoryText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  // Stats Grid
+  statsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#ffffff',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#94a3b8',
+  },
+  // Graph Styles
+  graphContainer: {
+    height: 160,
+    marginTop: 8,
+  },
+  barChart: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    height: '100%',
+    justifyContent: 'space-between',
+  },
+  barContainer: {
+    alignItems: 'center',
+    width: '12%',
+  },
+  bar: {
+    width: '100%',
+    backgroundColor: '#334155',
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+    minHeight: 1,
+  },
+  barLabel: {
+    marginTop: 6,
+    fontSize: 10,
+    color: '#94a3b8',
+  },
+  // Workout Card Styles
+  workoutBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  workoutBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  workoutInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  workoutName: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '500',
+    marginLeft: 8,
+  },
+  workoutStats: {
+    flexDirection: 'row',
+    marginTop: 12,
+  },
+  workoutStat: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  workoutStatText: {
+    color: '#94a3b8',
+    fontSize: 12,
+    marginLeft: 4,
+  },
+  // Motivation Card
+  motivationCard: {
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    borderColor: 'rgba(139, 92, 246, 0.3)',
+  },
+  quoteIcon: {
+    marginBottom: 8,
+  },
+  quoteText: {
+    color: '#e2e8f0',
+    fontSize: 15,
+    lineHeight: 22,
+    fontStyle: 'italic',
+  },
+  // Bottom Navigation
+  bottomNav: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: '#1e293b',
+    borderTopWidth: 1,
+    borderTopColor: '#2d3748',
+    paddingVertical: 12,
+    paddingBottom: 24,
+  },
+  navItem: {
+    alignItems: 'center',
+    padding: 8,
+    borderRadius: 8,
+  },
+  navItemActive: {
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+  },
+  navLabel: {
+    fontSize: 10,
+    color: '#94a3b8',
+    marginTop: 4,
+  },
+  navLabelActive: {
+    color: '#8b5cf6',
+    fontWeight: '600',
+  },
+});
