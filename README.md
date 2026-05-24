@@ -2,7 +2,7 @@
 
 A modern React Native application built with Expo for seamless cross-platform development.
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 
@@ -27,7 +27,7 @@ A modern React Native application built with Expo for seamless cross-platform de
    - Scan the QR code that appears in your terminal or browser
    - The app will load on your device
 
-## 📱 Running the App
+##  Running the App
 
 ### Using Expo Go (Recommended)
 
@@ -50,7 +50,7 @@ A modern React Native application built with Expo for seamless cross-platform de
 - **Android emulator:** `npm run android` (requires Android Studio)
 - **iOS simulator:** `npm run ios` (macOS only)
 
-## 🛠 Development
+##  Development
 
 ### Project Structure
 
@@ -76,7 +76,7 @@ DrovaGo/
 - Update `app.json` to change app metadata and configuration
 - Add new components in separate files and import them
 
-## 📦 Available Scripts
+##  Available Scripts
 
 - `npm start` - Start the Expo development server
 - `npm run android` - Run on Android emulator
@@ -84,7 +84,7 @@ DrovaGo/
 - `npm run web` - Run in web browser
 - `npm run eject` - Eject from Expo (not recommended)
 
-## 🔧 Troubleshooting
+##  Troubleshooting
 
 ### Common Issues
 
@@ -103,14 +103,14 @@ DrovaGo/
    npm install
    ```
 
-## 📱 App Features
+##  App Features
 
 - **Home Screen**: Welcome message, feature cards, and quick stats
 - **Navigation**: Tab-based navigation between sections
 - **Modern Design**: Clean UI with shadows, rounded corners, and proper spacing
 - **Responsive**: Adapts to different screen sizes
 
-## 🚀 Next Steps
+##  Next Steps
 
 To extend the app, consider adding:
 
@@ -121,6 +121,6 @@ To extend the app, consider adding:
 - Push notifications
 - Offline support
 
-## 📄 License
+##  License
 
 This project is open source and available under the MIT License. 
